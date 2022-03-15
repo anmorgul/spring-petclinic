@@ -3,28 +3,28 @@ pipeline {
         label 'main'
     }
     stages {
-        stage("ls") {
-            steps {
-                script {
-                    sh "ls"
-                }
-            }
-        }
-        stage("mvn clean") {
-            steps {
-                script {
-                    sh "mvn clean package"
-                }
-            }
-        }
-        // stage("docker build test") {
+        // stage("mvn clean") {
         //     steps {
         //         script {
-        //             sh "cp ./jenkins/Dockerfile ./Dockerfile"
-        //             sh "docker build -t petclinic ."
+        //             sh "mvn clean package"
         //         }
         //     }
         // }
+        stage('Build') {
+            steps {
+                sh 'mvn -B -DskipTests clean package'
+            }
+        }
+        stage('Test') { 
+            steps {
+                sh 'mvn test' 
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml' 
+                }
+            }
+        }
         stage("docker build docker image and push to ecr") {
         	steps {
                 script {
