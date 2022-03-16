@@ -58,6 +58,7 @@ pipeline {
         //          echo 'Empty'
         //     }
         // }
+        
         stage('Deploy to ECR') {
             steps {
                 script{
