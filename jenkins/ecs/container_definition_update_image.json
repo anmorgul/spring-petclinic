@@ -13,7 +13,7 @@
       "essential": true,
       "name": "petclinic",
       "logConfiguration": {
-        "logDriver": "awslogs",
+        "logDriver": "awslogs"
       }
     }
 ]
