@@ -1,0 +1,19 @@
+[
+    {
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "protocol": "tcp",
+          "containerPort": 8080
+        }
+      ],
+      "cpu": 256,
+      "memory": 512,
+      "image": "934086672967.dkr.ecr.eu-central-1.amazonaws.com/java:latest",
+      "essential": true,
+      "name": "petclinic",
+      "logConfiguration": {
+        "logDriver": "awslogs",
+      }
+    }
+]
