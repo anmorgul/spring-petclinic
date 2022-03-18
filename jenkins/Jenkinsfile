@@ -12,7 +12,7 @@ pipeline {
         AWS_ECR_URL = '934086672967.dkr.ecr.eu-central-1.amazonaws.com/java'
 
         AWS_ECS_SERVICE = 'petclinicservice'
-        AWS_ECS_EXECUTION_ROL = "what-backend-execution-task-role" 
+        AWS_ECS_EXECUTION_ROL = "ecsTaskExecutionRole" 
     }
     agent {
         label 'main'
@@ -58,35 +58,32 @@ pipeline {
                 }
             }
         }
-        stage('Register task definition'){
-            steps {
-                withAWS(credentials: 'aws_creds', region: "${AWS_ECR_REGION}") {
-                    script {
-                        sh '''
-                            /usr/bin/aws ecs register-task-definition \
-                                --region ${AWS_ECR_REGION} \
-                                --family ${AWS_ECS_TASK_DEFINITION} \
-                                --requires-compatibilities ${AWS_ECS_COMPATIBILITY} \
-                                --container-definitions file://${AWS_ECS_TASK_DEFINITION_PATH} 
-                        '''
-                    }
-                }
-            }
-        }
+        // stage('Register task definition'){
+        //     steps {
+        //         withAWS(credentials: 'aws_creds', region: "${AWS_ECR_REGION}") {
+        //             script {
+        //                 sh '''
+        //                     /usr/bin/aws ecs register-task-definition \
+        //                         --region ${AWS_ECR_REGION} \
+        //                         --family ${AWS_ECS_TASK_DEFINITION} \
+        //                         --requires-compatibilities ${AWS_ECS_COMPATIBILITY} \
+        //                         --container-definitions file://${AWS_ECS_TASK_DEFINITION_PATH} 
+        //                 '''
+        //             }
+        //         }
+        //     }
+        // }
         stage('Update service'){
             steps {
                 withAWS(credentials: 'aws_creds', region: "${AWS_ECR_REGION}") {
                     script {
-                        // def taskRevision = sh(script: "/usr/local/bin/aws ecs describe-task-definition --task-definition ${AWS_ECS_TASK_DEFINITION} | egrep \"revision\" | tr \"/\" \" \" | awk '{print \$2}' | sed 's/\"\$//'", returnStdout: true)
                         sh("/usr/bin/aws ecs update-service \
                             --cluster ${AWS_ECS_CLUSTER} \
                             --service ${AWS_ECS_SERVICE} \
                             --task-definition ${AWS_ECS_TASK_DEFINITION}")
-                        // :${taskRevision}
                     }
                 }
             }
         }
     }
 }
-                                // --execution-role-arn ${AWS_ECS_EXECUTION_ROL} \
