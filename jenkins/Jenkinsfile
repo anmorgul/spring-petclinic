@@ -11,7 +11,7 @@ pipeline {
         AWS_ECS_CLUSTER = 'petclinic-claster'
         AWS_ECR_URL = '934086672967.dkr.ecr.eu-central-1.amazonaws.com/java'
 
-        AWS_ECS_SERVICE = 'what-backend-release-ecs-service'
+        AWS_ECS_SERVICE = 'petclinicservice'
         AWS_ECS_EXECUTION_ROL = "what-backend-execution-task-role" 
     }
     agent {
@@ -58,7 +58,7 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to ECS'){
+        stage('Register task definition'){
             steps {
                 withAWS(credentials: 'aws_creds', region: "${AWS_ECR_REGION}") {
                     script {
@@ -67,14 +67,21 @@ pipeline {
                                 --region ${AWS_ECR_REGION} \
                                 --family ${AWS_ECS_TASK_DEFINITION} \
                                 --requires-compatibilities ${AWS_ECS_COMPATIBILITY} \
-                                --network-mode ${AWS_ECS_NETWORK_MODE} \
                                 --container-definitions file://${AWS_ECS_TASK_DEFINITION_PATH} 
                         '''
-                        def taskRevision = sh(script: "/usr/local/bin/aws ecs describe-task-definition --task-definition ${AWS_ECS_TASK_DEFINITION} | egrep \"revision\" | tr \"/\" \" \" | awk '{print \$2}' | sed 's/\"\$//'", returnStdout: true)
+                    }
+                }
+            }
+        }
+        stage('Update service'){
+            steps {
+                withAWS(credentials: 'aws_creds', region: "${AWS_ECR_REGION}") {
+                    script {
+                        // def taskRevision = sh(script: "/usr/local/bin/aws ecs describe-task-definition --task-definition ${AWS_ECS_TASK_DEFINITION} | egrep \"revision\" | tr \"/\" \" \" | awk '{print \$2}' | sed 's/\"\$//'", returnStdout: true)
                         sh("/usr/bin/aws ecs update-service \
-                            --cluster ${AWS_ECS_PANEL_CLUSTER} \
-                            --service ${AWS_ECS_PANEL_SERVICE} \
-                            --task-definition ${AWS_ECS_PANEL_TASK_DEFINITION}")
+                            --cluster ${AWS_ECS_CLUSTER} \
+                            --service ${AWS_ECS_SERVICE} \
+                            --task-definition ${AWS_ECS_TASK_DEFINITION}")
                         // :${taskRevision}
                     }
                 }
